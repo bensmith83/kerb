@@ -18,7 +18,7 @@
 #define ETHER_TYPE_IP (0x0800)
 
 void print_hex(const unsigned char *p, int len);
-void process_packet_kerb(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer);
+void process_packet_kerb(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer, int size);
 void process_packet_count(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer);
 
 
@@ -51,24 +51,8 @@ typedef struct tlvdata {
 
 int main(int argc, char **argv)
 {
-    int i, dont_process, myptr, pkt_num, tcp_hdr_len, num, jump_len;
-    struct pcap_pkthdr header;
-    const u_char *packet = NULL;
     pcap_t *FH = NULL;
     char errbuf[PCAP_ERRBUF_SIZE];
-    char SRC[16];
-    char DST[16];
-    int ether_type = 0;
-    int ether_offset = 0;    
-    unsigned int proto_version = 0;
-    u_char *pkt_ptr = NULL;
-    struct ip *ip_hdr = NULL;
-    int packet_length = 0;
-    int ip_header_len = 0;
-    int proto = 0; 
-    int src_port = 0;
-    int dst_port = 0;
-    struct tlvdata tlv;
 
     if(argc < 2)
     {
@@ -84,14 +68,13 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    pkt_num = 0;
     pcap_loop(FH , -1 , process_packet_count , NULL);
 
     fprintf(stdout,"\n");
     return 0;
 }
 
-int get_tlv_length(u_char *pyld_strt, int str_ptr, struct tlvdata *tlv)
+int get_tlv_length(const u_char *pyld_strt, int str_ptr, struct tlvdata *tlv)
 {
     tlv->type = 0;
     tlv->constructed = 0;
@@ -170,15 +153,14 @@ struct tlvdata {
 */
 }
 
-void process_packet_kerb(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer)
+void process_packet_kerb(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer, int size)
 {
-    int dont_process=0, myptr=0, pkt_num=0, tcp_hdr_len=0, jump_len=0, tlv_len=0;
+    int dont_process=0, myptr=0, pkt_num=0, tcp_hdr_len=0, tlv_len=0;
     char SRC[16];
     char DST[16];
     int ether_type = 0;
-    int ether_offset = 0;
     unsigned int proto_version = 0;
-    u_char *pkt_ptr = NULL;
+    const u_char *pkt_ptr = NULL;
     struct ip *ip_hdr = NULL;
     int packet_length = 0;
     int ip_header_len = 0;
@@ -286,7 +268,7 @@ void process_packet_count(u_char *args, const struct pcap_pkthdr *header, const 
             break;
         case 6: // TCP
             ++TCP_COUNT;
-            process_packet_kerb(args, header, buffer);
+            process_packet_kerb(args, header, buffer, size);
             break;
         case 17: // UDP
             ++UDP_COUNT;
