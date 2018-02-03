@@ -294,6 +294,56 @@ void process_packet_count(u_char *args, const struct pcap_pkthdr *header, const 
 
 }
 
+int check_golden_ticket()
+{
+    //record every cname, sname, cipher and enc-part from AS-REP and TGS-REQ
+    // make sure there's a corresponding cipher for AS-REP and TGS-REQ
+    // if not? report golden ticket attack
+    return 0;
+}
+
+int check_silver_ticket()
+{
+    //see check_golden_ticket, but do it for TGS-REP and AP-REQ.
+    return 0;
+}
+
+int check_ms14_068()
+{
+    //check for AS-REQ with PA-PAC-REQUEST set to false
+    //AND a TGS-REQ with enc-authorization-data added.
+    //also, target service has NA bit of userAccountControl attribute set to false
+    //      KERB_VALIDATION_INFO structure from PAC (also in AD)
+    return 0;
+}
+
+int check_dcsync()
+{
+    //this doesn't really go here. you need to detect DRSUAPI dcerpc calls
+    return 0;
+}
+
+int check_skeleton_key()
+{
+    // figure out AD functional level (s/b at least 2008)
+    // AS-REQ etypes should include AES128 or AES256 (they won't in the attack)
+    //KRB-ERROR for PA-ETYPE-INFO2 should occur
+    return 0;
+}
+
+int check_bad_username()
+{
+    // As-REQ
+    // KRB-ERROR with error code 6 err-principal-unknown
+    return 0;
+}
+
+int check_bad_password()
+{
+    //AS-REQ
+    //KRB-Error error code 24 err-preauth-failed or 25 err-preauth-required
+    return 0;
+}
 
 
 void print_hex(const unsigned char *p, int len)
