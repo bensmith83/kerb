@@ -10,10 +10,10 @@
 #include <sys/socket.h>
 #include <arpa/inet.h> // for inet_ntoa()
 #include <net/ethernet.h>
-#include <netinet/ip_icmp.h>   //Provides declarations for icmp header
-#include <netinet/udp.h>   //Provides declarations for udp header
-#include <netinet/tcp.h>   //Provides declarations for tcp header
-#include <netinet/ip.h>    //Provides declarations for ip header
+#include <netinet/ip_icmp.h>
+#include <netinet/udp.h>
+#include <netinet/tcp.h>
+#include <netinet/ip.h>
 
 #define ETHER_TYPE_IP (0x0800)
 
@@ -21,6 +21,11 @@ void print_hex(const unsigned char *p, int len);
 void process_packet_kerb(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer, int size);
 void process_packet_count(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer);
 
+// Sources:
+// rfc4120 https://tools.ietf.org/html/rfc4120
+// rfc1510 https://tools.ietf.org/html/rfc1510
+// https://www.blackhat.com/docs/eu-15/materials/eu-15-Beery-Watching-The-Watchdog-Protecting-Kerberos-Authentication-With-Network-Monitoring.pdf
+// https://www.blackhat.com/docs/eu-15/materials/eu-15-Beery-Watching-The-Watchdog-Protecting-Kerberos-Authentication-With-Network-Monitoring-wp.pdf
 
 int AS_REQ_COUNT = 0;
 int AS_REP_COUNT = 0;
