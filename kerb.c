@@ -22,10 +22,13 @@ void process_packet_kerb(u_char *args, const struct pcap_pkthdr *header, const u
 void process_packet_count(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer);
 
 
-int ICMP_COUNT = 0;
-int IGMP_COUNT = 0;
-int TCP_COUNT = 0;
-int UDP_COUNT = 0;
+int AS_REQ_COUNT = 0;
+int AS_REP_COUNT = 0;
+int TGS_REQ_COUNT = 0;
+int TGS_REP_COUNT = 0;
+int KRB_ERR_COUNT = 0;
+int AP_REQ_COUNT = 0;
+int AP_REP_COUNT = 0;
 int OTHER_COUNT = 0;
 int TOTAL_COUNT = 0;
 
@@ -228,28 +231,45 @@ void process_packet_kerb(u_char *args, const struct pcap_pkthdr *header, const u
                 print_hex(pkt_ptr, 10);
                 krb_type = pkt_ptr[0];
                 fprintf(stdout,"krb_type: %2x\n",krb_type);
+                ++TOTAL_COUNT;
                 switch(krb_type)
                 {
                     case 0x6a:
                         tlv_len = get_tlv_length(buffer, myptr, &tlv);
                         fprintf(stdout," -> AS-REQ, len: %d\n",tlv_len);
+                        ++AS_REQ_COUNT;
                         break;
                     case 0x6b:
                         fprintf(stdout," -> AS-REP\n");
+                        ++AS_REP_COUNT;
                         break;
                     case 0x6c:
                         fprintf(stdout," -> TGS-REQ\n");
+                        ++TGS_REQ_COUNT;
                         break;
                     case 0x6d:
                         fprintf(stdout," -> TGS-REP\n");
+                        ++TGS_REP_COUNT;
+                        break;
+                    case 0x6e:
+                        fprintf(stdout," -> AP-REQ\n");
+                        ++AP_REQ_COUNT;
+                        break;
+                    case 0x64:
+                        fprintf(stdout," -> AP-REP\n");
+                        ++AP_REP_COUNT;
                         break;
                     case 0x7e:
                         fprintf(stdout," -> KRB-ERROR\n");
+                        ++KRB_ERR_COUNT;
                         break;
+                    default:
+                        ++OTHER_COUNT;
                 }
             }
         }
     }
+    fprintf(stdout, "AS-REQ : %d   AS-REP : %d   TGS-REQ : %d   TGS-REP : %d   KRB-ERROR : %d   AP-REQ : %d   AP-REP : %d   OTHER: %d   Total : %d\r", AS_REQ_COUNT, AS_REP_COUNT, TGS_REQ_COUNT, TGS_REP_COUNT, KRB_ERR_COUNT, AP_REQ_COUNT, AP_REP_COUNT, OTHER_COUNT, TOTAL_COUNT);
 }
 
 void process_packet_count(u_char *args, const struct pcap_pkthdr *header, const u_char *buffer)
@@ -257,29 +277,24 @@ void process_packet_count(u_char *args, const struct pcap_pkthdr *header, const 
     int size = 0;
     size = header->len;
     struct iphdr *iph = (struct iphdr*)(buffer + sizeof(struct ethhdr));
-    ++TOTAL_COUNT;
     switch(iph->protocol)
     {
         case 1: //ICMP
-            ++ICMP_COUNT;
             break;
         case 2: //IGMP
-            ++IGMP_COUNT;
             break;
         case 6: // TCP
-            ++TCP_COUNT;
             process_packet_kerb(args, header, buffer, size);
             break;
         case 17: // UDP
-            ++UDP_COUNT;
             break;
         default:
-            ++OTHER_COUNT;
             break;
     }
-    fprintf(stdout, "TCP : %d   UDP : %d   ICMP : %d   IGMP : %d   Others : %d   Total : %d\r", TCP_COUNT, UDP_COUNT, ICMP_COUNT, IGMP_COUNT, OTHER_COUNT, TOTAL_COUNT);
 
 }
+
+
 
 void print_hex(const unsigned char *p, int len)
 {
